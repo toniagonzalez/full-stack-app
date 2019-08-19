@@ -9,8 +9,10 @@ class UpdateCourse extends Component {
         super(props);
     
         this.state = {
-          course: {},
           errors: [],
+          confirmation: null,
+          id: '',
+          userId: '',
           title: '',
           description: '',
           estimatedTime: '',
@@ -18,7 +20,7 @@ class UpdateCourse extends Component {
         }
     };
 
-    api = (path, method, body=null) => {
+    api = (path, method, body=null, requiresAuth = false, credentials =  null) => {
         const options = {
         method,
         headers: {
@@ -28,6 +30,12 @@ class UpdateCourse extends Component {
 
         if (body!== null ){
         options.body = JSON.stringify(body);
+        }
+
+        if(requiresAuth) {
+            const encodedCredentials = btoa(`${credentials.emailAddress}:${credentials.password}`);
+      
+            options.headers['Authorization'] = `Basic ${encodedCredentials}`;
         }
 
         return fetch(path, options)
@@ -40,44 +48,57 @@ class UpdateCourse extends Component {
         const getApi = await this.api(path, 'GET', null );
         return getApi.json();    
     }
-    
-    validation = ()=>{
-        return(
-            <div>
-                <h2 className="validation--errors--label">Validation errors</h2>
-                <div validation-errors>
-                    <ul>
-                    {this.state.errors.map((error, i) => <li key={i}>{error}</li>)}
-                    </ul>
-                </div>
-            </div>
-        )
-    }
 
+    updateCourse = async(course)=> {
+        let pathLength = window.location.pathname.length; 
+        let courseId = window.location.pathname.substring(9 , pathLength - 7);
+        let path = urlBase + '/courses/' + courseId;
+        let emailAddress = this.props.isAuthed.user[0].emailAddress;
+        let password = this.props.password;
+
+        const response = await this.api(path, 'PUT', course, true, {emailAddress, password })
+        if (response.status === 401 || response.status === 403 ) {
+            this.props.history.push('/forbidden'); 
+          }
+        else if (response.status === 204) {
+            this.setState({
+                confirmation: "Your course has been updated!"
+            }) 
+            return [];
+        }
+        else {
+            this.setState({
+                errors: ["There has been a problem!"]
+            })
+        };
+        
+    }
+    
     handleInputChange = (event) => {
         const value = event.target.value;
         const name = event.target.name;
 
         this.setState({
-            [name]: [value]
+            [name]: value
         });
     }
 
     handleSubmit = async(event)=> {
         event.preventDefault();
-        let title = this.state.title.length ? this.state.title[0] : this.state.course.title;
-        let description = this.state.description.length ?  this.state.description[0] : this.state.course.description;
-        let estimatedTime = this.state.estimatedTime.length ? this.state.estimatedTime[0] : this.state.course.estimatedTime;
-        let materialsNeeded = this.state.materialsNeeded.length ? this.state.materialsNeeded[0] : this.state.course.materialsNeeded;
+        let title = this.state.title;
+        let description = this.state.description;
+        let estimatedTime = this.state.estimatedTime;
+        let materialsNeeded = this.state.materialsNeeded;
         
-        const course = [
+        const course = {
             title,
             description,
             estimatedTime,
             materialsNeeded
-        ]
+        };
 
-        await console.log("course:" + course+ " state:" + this.state.course.title);
+        await console.log(this.updateCourse(course));
+       
     }
 
 
@@ -85,12 +106,13 @@ class UpdateCourse extends Component {
         this.getCourse()
           .then(data => {
             this.setState({
-                course: {
-                    title: data.course.title,
-                    description: data.course.description,
-                    estimatedTime: data.course.estimatedTime,
-                    materialsNeeded: data.course.materialsNeeded
-                }
+                course: data.course,
+                id: data.course.id,
+                userId: data.course.userId,
+                title: data.course.title,
+                description: data.course.description,
+                estimatedTime: data.course.estimatedTime,
+                materialsNeeded: data.course.materialsNeeded,
             })
           })
           .catch(error => {
@@ -99,14 +121,28 @@ class UpdateCourse extends Component {
     }
 
     render(){
-        const validationErrors = this.validation();
         const errors = this.state.errors;
-      
+        const confirmation = this.state.confirmation;
+  
         return (
             <div className="bounds course--detail">
+                 <div>
+                    { confirmation ?
+                        <h3 > {confirmation} </h3>
+                    :  
+                        []
+                    }
+                </div>
                 <div>
                     { errors.length?
-                        validationErrors
+                         <div>
+                            <h2 className="validation--errors--label">Validation errors</h2>
+                            <div validation-errors>
+                                <ul>
+                                {this.state.errors.map((error, i) => <li key={i}>{error}</li>)}
+                                </ul>
+                            </div>
+                        </div>
                     :  
                         []
                     }
@@ -123,23 +159,22 @@ class UpdateCourse extends Component {
                                         name="title" 
                                         type="text" 
                                         className="input-title course--title--input" 
-                                        placeholder={this.state.course.title}
-                                        defaultValue={this.state.course.title}
+                                        placeholder={this.state.title}
+                                        value={this.state.title}
                                         onChange={this.handleInputChange}
                                     />
                                 </div>
-                                <p>Created by User - {this.state.course.userId}</p>
+                                <p>Created by User - {this.state.userId}</p>
                             </div>
                             <div className="course--description">
                                 <div>
                                     <textarea 
                                         id="description" 
                                         name="description" 
-                                        placeholder={this.state.course.description}
-                                        defaultValue={this.state.course.description}
+                                        placeholder={this.state.description}
+                                        value={this.state.description}
                                         onChange={this.handleInputChange}
-                                    >                             
-                                    </textarea>
+                                   />                             
                                 </div>
                             </div>
                         </div>
@@ -154,8 +189,8 @@ class UpdateCourse extends Component {
                                                     name="estimatedTime" 
                                                     type="text" 
                                                     className="course--time--input" 
-                                                    placeholder={this.state.course.estimatedTime}  
-                                                    defaultValue={this.state.course.estimatedTime}
+                                                    placeholder={this.state.estimatedTime}  
+                                                    value={this.state.estimatedTime}
                                                     onChange={this.handleInputChange}
                                                 />
                                             </div>
@@ -166,11 +201,10 @@ class UpdateCourse extends Component {
                                                 <textarea 
                                                     id="materialsNeeded" 
                                                     name="materialsNeeded"  
-                                                    placeholder={this.state.course.materialsNeeded}
-                                                    innerHTML={this.state.course.materialsNeeded}
+                                                    placeholder={this.state.materialsNeeded}
+                                                    value={this.state.materialsNeeded}
                                                     onChange={this.handleInputChange}
-                                                >
-                                                </textarea>
+                                                />
                                             </div>
                                         </li>
                                     </ul> 
@@ -178,7 +212,7 @@ class UpdateCourse extends Component {
                         </div> 
                         <div className="grid-100 pad-bottom">
                             <button className="button" type="submit">Update Course</button>
-                            <Link to={'/courses/'+ this.state.course.id} className="button button-secondary" >Cancel</Link>
+                            <Link to={'/courses/'+ this.state.id} className="button button-secondary" >Cancel</Link>
                         </div>
                     </form>  
                 </div>

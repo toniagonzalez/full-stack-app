@@ -29,7 +29,7 @@ class CreateCourse extends Component {
                     </div>
                     <div className="course--description">
                         <div>
-                            <textarea id="description" name="description" placeholder="Course Description..."></textarea>
+                            <textarea id="description" name="description" placeholder="Course Description..."/>
                         </div>
                     </div>
                 </div>
@@ -45,7 +45,7 @@ class CreateCourse extends Component {
                                 <li className="course--stats--list--item">
                                     <h4>Materials Needed</h4>
                                     <div>
-                                        <textarea id="materialsNeeded" name="materialsNeeded" placeholder="List Materials..."></textarea>
+                                        <textarea id="materialsNeeded" name="materialsNeeded" placeholder="List Materials..."/>
                                     </div>
                                 </li>
                             </ul> 

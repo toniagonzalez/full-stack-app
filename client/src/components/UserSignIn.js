@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 
 class UserSignIn extends Component {
@@ -24,6 +24,7 @@ class UserSignIn extends Component {
 
     handleSubmit = async (event)=> {
         event.preventDefault();
+        const  from  = this.props.location.state ? this.props.location.state.from.pathname : this.props.history.push('/');
         await this.props.signIn(this.state.emailAddress, this.state.password)
             .then( user => {
                 if (user === null) {
@@ -31,9 +32,9 @@ class UserSignIn extends Component {
                         return { errors: [ 'Sign-in was unsuccessful']};
                     }); 
                 }
-                else {
-                    this.props.history.push('/');
-                }
+                else if (this.props.redirect === true) { 
+                    this.props.history.push(from);              
+                }    
             })
             .catch(err => {
                 console.log(err);

@@ -1,5 +1,5 @@
 import React, { Component} from 'react';
-import { Switch, Route } from 'react-router-dom';
+import { Switch, Route, Redirect } from 'react-router-dom';
 import urlBase from './config';
 import Cookies from 'js-cookie';
 
@@ -14,6 +14,7 @@ import UserSignIn from './components/UserSignIn';
 import UserSignOut from './components/UserSignOut';
 import NotFound from './components/NotFound';
 import Errors from './components/Errors';
+import Forbidden from './components/Forbidden';
 
 class App extends Component {
 
@@ -22,6 +23,8 @@ class App extends Component {
 
     this.state = {
       authenticatedUser: Cookies.getJSON('authenticatedUser') || null,
+      password: null,
+      redirectToReferrer: false,
       errors: []
     }
   };
@@ -78,13 +81,16 @@ class App extends Component {
   }
 
 
-  signIn = async (username, password) => {
-    const user = await this.getUser(username, password);
+  signIn = async (emailAddress, password) => {
+    const user = await this.getUser(emailAddress, password);
+    const userPassword = password;
     if(user !== null){
 
       this.setState( () => {
         return {
-          authenticatedUser: user
+          authenticatedUser: user,
+          redirectToReferrer: true,
+          password: userPassword
         }
 
     });
@@ -100,7 +106,9 @@ class App extends Component {
 
       this.setState( ()=> {
       return { 
-          authenticatedUser: null 
+          authenticatedUser: null,
+          password: null,
+          redirectToReferrer: false
       }
       });
 
@@ -108,7 +116,25 @@ class App extends Component {
       Cookies.remove('authenticatedUser');
   }
 
+  
+
   render() {
+
+    const PrivateRoute = ({component: MyComponent, ...rest}) =>{
+      return(
+          <Route {...rest} render={(props) => (
+              this.state.authenticatedUser? 
+              <MyComponent {...props}  isAuthed={this.state.authenticatedUser} password={this.state.password}/>
+              : 
+              <Redirect to={{
+                  pathname:'/signin',
+                  state: {from: props.location}
+              }}/>
+          )}  
+          />
+      )
+    }
+   
     return (
       <div>
         <Header isAuthed={this.state.authenticatedUser} signOut={this.signOut}/>
@@ -119,7 +145,8 @@ class App extends Component {
               render={ (props) => 
                 <UserSignIn 
                   {...props} 
-                  isAuthed={this.state.authenticatedUser} 
+                  isAuthed={this.state.authenticatedUser}
+                  redirect={this.state.redirectToReferrer} 
                   signIn={this.signIn}
                />
               }
@@ -142,29 +169,23 @@ class App extends Component {
                 <UserSignOut
                   {...props}
                   signOut={this.signOut}
+                  redirect={this.state.redirectToReferrer} 
                 />
              }
             />  
-            <Route 
-              path="/courses/create" 
-              render={ (props) =>
-                <CreateCourse
-                {...props}
-                isAuthed={this.state.authenticatedUser} 
-                />
-              }
+            <PrivateRoute
+              path="/courses/create"
+              {...this.props}
+              component={CreateCourse}
             />
-            <Route 
+            <PrivateRoute 
               path="/courses/:id/update" 
-              render={ (props) =>
-                <UpdateCourse
-                {...props}
-                isAuthed={this.state.authenticatedUser} 
-                />
-              }
+              {...this.props}
+              component={UpdateCourse}
             />
             <Route path="/courses/:id" component={CourseDetail}/>
             <Route path="/errors" component={Errors}/>
+            <Route path="/forbidden" component={Forbidden}/>
             <Route component={NotFound}/>
         </Switch>
       </div>
