@@ -13,8 +13,9 @@ import UserSignUp from './components/UserSignUp';
 import UserSignIn from './components/UserSignIn';
 import UserSignOut from './components/UserSignOut';
 import NotFound from './components/NotFound';
-import Errors from './components/Errors';
+import UnhandledError from './components/UnhandledError';
 import Forbidden from './components/Forbidden';
+
 
 class App extends Component {
 
@@ -23,6 +24,7 @@ class App extends Component {
 
     this.state = {
       authenticatedUser: Cookies.getJSON('authenticatedUser') || null,
+      encodedCredentials: Cookies.get('encodedCredentials') || null,
       password: null,
       redirectToReferrer: false,
       errors: []
@@ -45,7 +47,6 @@ class App extends Component {
 
     if(requiresAuth) {
       const encodedCredentials = btoa(`${credentials.username}:${credentials.password}`);
-
       options.headers['Authorization'] = `Basic ${encodedCredentials}`;
     }
 
@@ -83,37 +84,40 @@ class App extends Component {
 
   signIn = async (emailAddress, password) => {
     const user = await this.getUser(emailAddress, password);
-    const userPassword = password;
+    const encodedCredentials = btoa(`${emailAddress}:${password}`);
     if(user !== null){
 
       this.setState( () => {
         return {
           authenticatedUser: user,
           redirectToReferrer: true,
-          password: userPassword
+          encodedCredentials: encodedCredentials
         }
 
-    });
+      });
 
-    //Set cookie on SignIn
-    Cookies.set('authenticatedUser', JSON.stringify(user), { expires: 1 });
-    }
+      //Set cookie on SignIn
+      Cookies.set('authenticatedUser', JSON.stringify(user), { expires: 1 });
 
+      //Encode emailAddress & password and Set & save cookie to state
+      Cookies.set('encodedCredentials', `${encodedCredentials}`, { expires: 1 }); 
+    }  
     return user;
   }
 
   signOut = () => {
-
+  
       this.setState( ()=> {
-      return { 
-          authenticatedUser: null,
-          password: null,
-          redirectToReferrer: false
-      }
+        return { 
+            authenticatedUser: null,
+            redirectToReferrer: false,
+            encodedCredentials: null
+        }
       });
 
       //Remove cookie on SignOut
       Cookies.remove('authenticatedUser');
+      Cookies.remove('encodedCredentials');
   }
 
   
@@ -124,7 +128,11 @@ class App extends Component {
       return(
           <Route {...rest} render={(props) => (
               this.state.authenticatedUser? 
-              <MyComponent {...props}  isAuthed={this.state.authenticatedUser} password={this.state.password}/>
+              <MyComponent 
+                {...props}  
+                isAuthed={this.state.authenticatedUser} 
+                encodedCred={this.state.encodedCredentials}
+              />
               : 
               <Redirect to={{
                   pathname:'/signin',
@@ -183,9 +191,17 @@ class App extends Component {
               {...this.props}
               component={UpdateCourse}
             />
-            <Route path="/courses/:id" component={CourseDetail}/>
-            <Route path="/errors" component={Errors}/>
+            <Route 
+              path="/courses/:id" 
+              render={ (props) => 
+              <CourseDetail
+                isAuthed={this.state.authenticatedUser}
+              />
+            }
+            />
+            <Route path="/errors" component={UnhandledError}/>
             <Route path="/forbidden" component={Forbidden}/>
+            <Route path="/notfound" component={NotFound}/>
             <Route component={NotFound}/>
         </Switch>
       </div>

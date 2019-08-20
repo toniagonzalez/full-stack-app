@@ -70,7 +70,7 @@ router.get('/', asyncHandler(async (req, res) =>{
 router.get('/users', asyncHandler(authenticateUser), asyncHandler(async (req, res)=>{
     const currentUser = req.currentUser;
     User.findAll({
-        attributes: ['id', 'firstName', 'lastName', 'emailAddress', 'password'],
+        attributes: ['id', 'firstName', 'lastName', 'emailAddress'],
         where: {
             id: currentUser.id
         }

@@ -22,19 +22,19 @@ class UpdateCourse extends Component {
 
     api = (path, method, body=null, requiresAuth = false, credentials =  null) => {
         const options = {
-        method,
-        headers: {
-            'Content-Type': 'application/json'
-        },
+            method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
         };
 
         if (body!== null ){
-        options.body = JSON.stringify(body);
+            options.body = JSON.stringify(body);
         }
 
         if(requiresAuth) {
-            const encodedCredentials = btoa(`${credentials.emailAddress}:${credentials.password}`);
-      
+            const encodedCredentials = this.props.encodedCred;
+            console.log(encodedCredentials);
             options.headers['Authorization'] = `Basic ${encodedCredentials}`;
         }
 
@@ -53,13 +53,11 @@ class UpdateCourse extends Component {
         let pathLength = window.location.pathname.length; 
         let courseId = window.location.pathname.substring(9 , pathLength - 7);
         let path = urlBase + '/courses/' + courseId;
-        let emailAddress = this.props.isAuthed.user[0].emailAddress;
-        let password = this.props.password;
-
-        const response = await this.api(path, 'PUT', course, true, {emailAddress, password })
+  
+        const response = await this.api(path, 'PUT', course, true, this.props.encodedCred)
         if (response.status === 401 || response.status === 403 ) {
             this.props.history.push('/forbidden'); 
-          }
+        }
         else if (response.status === 204) {
             this.setState({
                 confirmation: "Your course has been updated!"
@@ -97,7 +95,7 @@ class UpdateCourse extends Component {
             materialsNeeded
         };
 
-        await console.log(this.updateCourse(course));
+        await this.updateCourse(course);
        
     }
 
@@ -209,11 +207,17 @@ class UpdateCourse extends Component {
                                         </li>
                                     </ul> 
                                 </div>
-                        </div> 
-                        <div className="grid-100 pad-bottom">
-                            <button className="button" type="submit">Update Course</button>
-                            <Link to={'/courses/'+ this.state.id} className="button button-secondary" >Cancel</Link>
                         </div>
+                            { confirmation ?
+                                <div className="grid-100 pad-bottom">
+                                    <Link to="/" className="button button-secondary">Return to Courses</Link>
+                                </div>
+                            :  
+                                <div className="grid-100 pad-bottom">
+                                    <button className="button" type="submit">Update Course</button>
+                                     <Link to={'/courses/'+ this.state.id} className="button button-secondary" >Cancel</Link>
+                                </div>
+                            }
                     </form>  
                 </div>
             </div>
