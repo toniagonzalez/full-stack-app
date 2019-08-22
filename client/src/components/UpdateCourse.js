@@ -34,7 +34,6 @@ class UpdateCourse extends Component {
 
         if(requiresAuth) {
             const encodedCredentials = this.props.encodedCred;
-            console.log(encodedCredentials);
             options.headers['Authorization'] = `Basic ${encodedCredentials}`;
         }
 
@@ -54,21 +53,24 @@ class UpdateCourse extends Component {
         let courseId = window.location.pathname.substring(9 , pathLength - 7);
         let path = urlBase + '/courses/' + courseId;
   
-        const response = await this.api(path, 'PUT', course, true, this.props.encodedCred)
+        const response = await this.api(path, 'PUT', course, true, this.props.encodedCred);
+
         if (response.status === 401 || response.status === 403 ) {
             this.props.history.push('/forbidden'); 
         }
         else if (response.status === 204) {
             this.setState({
-                confirmation: "Your course has been updated!"
+                confirmation: "Your course has been updated!",
+                errors: []
             }) 
             return [];
         }
-        else {
+        else if(response.status === 400 ) {
+            const errors = await response.json().then((data) => {return data.errors});
             this.setState({
-                errors: ["There has been a problem!"]
+                errors: errors
             })
-        };
+        }
         
     }
     
@@ -95,8 +97,7 @@ class UpdateCourse extends Component {
             materialsNeeded
         };
 
-        await this.updateCourse(course);
-       
+        await this.updateCourse(course);    
     }
 
 
@@ -124,13 +125,6 @@ class UpdateCourse extends Component {
   
         return (
             <div className="bounds course--detail">
-                 <div>
-                    { confirmation ?
-                        <h3 > {confirmation} </h3>
-                    :  
-                        []
-                    }
-                </div>
                 <div>
                     { errors.length?
                          <div>
@@ -145,6 +139,13 @@ class UpdateCourse extends Component {
                         []
                     }
                 </div>
+                {  confirmation ?
+                            <div className="confirmation">
+                                <h3 > {confirmation} </h3>     
+                            </div>
+                            :
+                            []
+                        }
                 <h1>Update Course</h1>
                 <div>    
                     <form onSubmit={this.handleSubmit}>
@@ -162,7 +163,7 @@ class UpdateCourse extends Component {
                                         onChange={this.handleInputChange}
                                     />
                                 </div>
-                                <p>Created by User - {this.state.userId}</p>
+                                <p>By {this.props.isAuthed.user[0].firstName} {this.props.isAuthed.user[0].lastName}</p>
                             </div>
                             <div className="course--description">
                                 <div>

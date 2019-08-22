@@ -57,7 +57,6 @@ class CreateCourse extends Component {
         }
 
         if(requiresAuth) {
-            // const encodedCredentials = btoa(`${credentials.emailAddress}:${credentials.password}`);
             const encodedCredentials = this.props.encodedCred;
         
             options.headers['Authorization'] = `Basic ${encodedCredentials}`;
@@ -68,11 +67,10 @@ class CreateCourse extends Component {
 
     createCourse = async(course)=> {
         let path = urlBase + '/courses';
-        // let emailAddress = this.props.isAuthed.user[0].emailAddress;
-        // let password = this.props.password;
+        
+        const response = await this.api(path, 'POST', course, true, this.props.encodedCred);
+        const errors = await response.json().then((data) => {return data.errors});
 
-        // const response = await this.api(path, 'POST', course, true, {emailAddress, password})
-        const response = await this.api(path, 'POST', course, true, this.props.encodedCred)
         if (response.status === 401 || response.status === 403 ) {
             this.props.history.push('/forbidden'); 
         }
@@ -82,33 +80,32 @@ class CreateCourse extends Component {
             }) 
             return [];
         }
-        else {
+        else {    
             this.setState({
-                errors: ["There has been a problem!"]
+                errors: errors
             })
         };
     }
 
     render(){
-        const errors = this.state.errors;
         const confirmation = this.state.confirmation;
       
         return (
             <div className="bounds course--detail">
-                  <div>
+                  <div className="confirmation">
                     { confirmation ?
-                        <h3 > {confirmation} </h3>
+                        <h3> {confirmation} </h3>
                     :  
                         []
                     }
                 </div>
                 <div>
-                    {errors.length > 0 ?
+                    {this.state.errors.length  ?
                         <div>
                             <h2 className="validation--errors--label">Validation errors</h2>
                             <div validation-errors>
                                 <ul>
-                                <li>Error Message</li> 
+                                {this.state.errors.map((error, i) => <li key={i}>{error}</li>)}
                                 </ul>
                             </div>
                         </div>
@@ -131,9 +128,10 @@ class CreateCourse extends Component {
                                         placeholder="Title"
                                         value={this.state.title}
                                         onChange={this.handleInputChange}
+                             
                                     />
                                 </div>
-                                <p>Created by User -{this.props.isAuthed.user[0].id}</p>
+                                <p>By {this.props.isAuthed.user[0].firstName} {this.props.isAuthed.user[0].lastName}</p>
                             </div>
                             <div className="course--description">
                                 <div>
@@ -143,6 +141,7 @@ class CreateCourse extends Component {
                                         placeholder="Course Description..."
                                         value={this.state.description}
                                         onChange={this.handleInputChange}
+                             
                                     />
                                 </div>
                             </div>

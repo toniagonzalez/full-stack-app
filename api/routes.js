@@ -67,7 +67,16 @@ router.get('/', asyncHandler(async (req, res) =>{
 
 //GET Currently Authorized User GET/api/users
 //SELECT id, firstName, lastname, emailAddress FROM Users WHERE id = req.currentUser.id
-router.get('/users', asyncHandler(authenticateUser), asyncHandler(async (req, res)=>{
+router.get('/users', [
+    check('emailAddress')
+    .exists()
+    .withMessage('Please provide a value for "Email Address"')
+    .isEmail()
+    .withMessage('Please enter a valid Email Address'),
+    check('password')
+    .exists()
+    .withMessage('Please provide a value for "password"')
+], asyncHandler(authenticateUser), asyncHandler(async (req, res)=>{
     const currentUser = req.currentUser;
     User.findAll({
         attributes: ['id', 'firstName', 'lastName', 'emailAddress'],
@@ -86,15 +95,19 @@ router.get('/users', asyncHandler(authenticateUser), asyncHandler(async (req, re
 router.post('/users', [
     check('firstName')
         .exists()
-        .withMessage('Please provide a value for "firstName"'),
+        .withMessage('Please provide a value for "First Name"')
+        .not().isEmpty()
+        .withMessage('Please provide a value for "First Name"'),
     check('lastName')
         .exists()
-        .withMessage('Please provide a value for "lastName"'),
+        .withMessage('Please provide a value for "Last Name"')
+        .not().isEmpty()
+        .withMessage('Please provide a value for "Last Name"'),
     check('emailAddress')
         .exists()
-        .withMessage('Please provide a value for "emailAddress"')
+        .withMessage('Please provide a value for "Email Address"')
         .isEmail()
-        .withMessage('Please enter a valid email address'),
+        .withMessage('Please enter a valid Email Address'),
     check('password')
         .exists()
         .withMessage('Please provide a value for "password"')
@@ -164,10 +177,14 @@ router.get('/courses/:id', asyncHandler(async (req, res)=>{
 router.post('/courses', [
     check('title')
         .exists()
-        .withMessage('Please provide a value for "title"'),
+        .withMessage('Please provide a value for "Course Title"')
+        .not().isEmpty()
+        .withMessage('Please provide a value for "Course Title"'),
     check('description')
         .exists()
-        .withMessage('Please provide a value for "description"')
+        .withMessage('Please provide a value for "Course Description"')
+        .not().isEmpty()
+        .withMessage('Please provide a value for "Course Description"')
 ], asyncHandler(authenticateUser), asyncHandler(async (req, res, next)=>{
     //Declare authenticated User 
     const currentUser = req.currentUser.id;
@@ -201,10 +218,14 @@ router.post('/courses', [
 router.put('/courses/:id', [
     check('title')
         .exists()
-        .withMessage('Please provide a value for "title"'),
+        .withMessage('Please provide a value for "title"')
+        .not().isEmpty()
+        .withMessage('Please provide a value for "Course Title"'),
     check('description')
         .exists()
         .withMessage('Please provide a value for "description"')
+        .not().isEmpty()
+        .withMessage('Please provide a value for "Course Description"'),
 ], asyncHandler(authenticateUser), asyncHandler(async (req, res, next)=>{
     //Declare authenticated User 
     const currentUser = req.currentUser.id;

@@ -753,3 +753,15 @@ input:focus {
 .course--description textarea {
   margin-bottom: 20px;
 }
+
+.confirmation {
+  color: green;
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+
+.delete-warning {
+  color: red;
+  font-size: 30px;
+  margin-bottom: 20px;
+}

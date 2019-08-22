@@ -27,7 +27,7 @@ class UserSignUp extends Component {
     signUp = async(user, username, password) => {
         await this.props.createUser(user)
         .then( errors=> {
-            if (errors.length) {
+            if (errors) {
               this.setState({ errors });
             }
             else {
@@ -99,7 +99,7 @@ class UserSignUp extends Component {
                                     type="text" 
                                     value={this.state.lastName} 
                                     onChange={this.handleInputChange}
-                                    placeholder="Last Name" 
+                                    placeholder="Last Name"
                                 />
                             </div>
                             <div>
@@ -109,7 +109,8 @@ class UserSignUp extends Component {
                                     type="text" 
                                     value={this.state.emailAddress}
                                     onChange={this.handleInputChange}
-                                    placeholder="Email Address" />
+                                    placeholder="Email Address"
+                                />
                             </div>
                             <div>
                                 <input 
@@ -118,7 +119,8 @@ class UserSignUp extends Component {
                                     type="password"
                                     value={this.state.password}
                                     onChange={this.handleInputChange} 
-                                    placeholder="Password" />
+                                    placeholder="Password" 
+                                />
                             </div>
                             <div>
                                 <input 
@@ -127,7 +129,8 @@ class UserSignUp extends Component {
                                     type="password"
                                     value={this.state.confirmPassword}
                                     onChange={this.handleInputChange} 
-                                    placeholder="Confirm Password" />
+                                    placeholder="Confirm Password"
+                                />
                             </div>
                             <div className="grid-100 pad-bottom">
                                 <button className="button" type="submit">Sign Up</button>

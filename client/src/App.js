@@ -15,6 +15,7 @@ import UserSignOut from './components/UserSignOut';
 import NotFound from './components/NotFound';
 import UnhandledError from './components/UnhandledError';
 import Forbidden from './components/Forbidden';
+import DeleteCourse from './components/DeleteCourse';
 
 
 class App extends Component {
@@ -55,6 +56,7 @@ class App extends Component {
 
   getUser= async(username, password) => {
     const response = await this.api(`/users`, 'GET', null, true, { username, password });
+    
     if (response.status === 200) {
       return response.json().then(data => data);
     }
@@ -62,22 +64,19 @@ class App extends Component {
       return null;
     }
     else {
-      this.setState({ errors: response.errors });
+      return null;
     }
+
   }
   
   createUser = async(user) => {
     const response = await this.api('/users', 'POST', user);
+    const errors = await response.json().then((data) => {return data.errors});
     if (response.status === 201) {
       return [];
     }
-    else if (response.status === 400) {
-      return response.json().then(data => {
-        return data.errors;
-      });
-    }
     else {
-      this.setState({ errors: response.errors });
+      return errors;
     }
   }
 
@@ -86,8 +85,7 @@ class App extends Component {
     const user = await this.getUser(emailAddress, password);
     const encodedCredentials = btoa(`${emailAddress}:${password}`);
     if(user !== null){
-
-      this.setState( () => {
+      this.setState( () => { 
         return {
           authenticatedUser: user,
           redirectToReferrer: true,
@@ -101,7 +99,8 @@ class App extends Component {
 
       //Encode emailAddress & password and Set & save cookie to state
       Cookies.set('encodedCredentials', `${encodedCredentials}`, { expires: 1 }); 
-    }  
+    } 
+   
     return user;
   }
 
@@ -126,7 +125,7 @@ class App extends Component {
 
     const PrivateRoute = ({component: MyComponent, ...rest}) =>{
       return(
-          <Route {...rest} render={(props) => (
+          <Route {...rest} render={(props) => (             
               this.state.authenticatedUser? 
               <MyComponent 
                 {...props}  
@@ -191,15 +190,21 @@ class App extends Component {
               {...this.props}
               component={UpdateCourse}
             />
+             <PrivateRoute 
+              path="/courses/:id/delete" 
+              {...this.props}
+              component={DeleteCourse}
+            />
             <Route 
               path="/courses/:id" 
               render={ (props) => 
               <CourseDetail
                 isAuthed={this.state.authenticatedUser}
+                history={this.history}
               />
             }
             />
-            <Route path="/errors" component={UnhandledError}/>
+            <Route path="/error" component={UnhandledError}/>
             <Route path="/forbidden" component={Forbidden}/>
             <Route path="/notfound" component={NotFound}/>
             <Route component={NotFound}/>

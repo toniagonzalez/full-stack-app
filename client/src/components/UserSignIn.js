@@ -9,10 +9,12 @@ class UserSignIn extends Component {
         this.state = {
             emailAddress: '',
             password: '',
-            errors: []
+            errors: [] 
         };
     }
     
+
+
     handleInputChange = (event) => {
         const value = event.target.value;
         const name = event.target.name;
@@ -26,25 +28,22 @@ class UserSignIn extends Component {
         event.preventDefault();
         const  from  = this.props.location.state ? this.props.location.state.from.pathname : this.props.history.push('/');
         await this.props.signIn(this.state.emailAddress, this.state.password)
-            .then( user => {
-                if (user === null) {
-                    this.setState( () => {
-                        return { errors: [ 'Sign-in was unsuccessful']};
-                    }); 
-                }
-                else if (this.props.redirect === true) { 
+            .then(user => {
+                if (user === null) {  
+                    this.props.history.push('/');                     
+               }
+                if (this.props.redirect === true) { 
                     this.props.history.push(from);              
-                }    
+                }
             })
             .catch(err => {
                 console.log(err);
-                this.props.history.push('/errors');
-            });
-          
+                this.props.history.push('/error');
+            });   
     }
 
     render(){
-        let errors = this.state.errors;
+       const errors = this.state.errors;
 
         return(
             <div className="bounds">
@@ -72,6 +71,7 @@ class UserSignIn extends Component {
                                     value={this.state.emailAddress}
                                     onChange={this.handleInputChange}
                                     placeholder="Email Address"
+                                    required
                                 />
                             </div>
                             <div>
@@ -82,6 +82,7 @@ class UserSignIn extends Component {
                                     value={this.state.password}
                                     onChange={this.handleInputChange}
                                     placeholder="Password" 
+                                    required
                                 />
                             </div>
                             <div className="grid-100 pad-bottom">

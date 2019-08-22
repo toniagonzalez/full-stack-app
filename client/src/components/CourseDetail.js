@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import { Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import urlBase from '../config';
+import  ReactMarkdown  from 'react-markdown';
 
 class CourseDetail extends Component{
 
@@ -36,22 +37,37 @@ class CourseDetail extends Component{
         if (response.status === 400) {
             this.props.history.push('/notfound'); 
         }
-        else if (response.status === 200) {
-            return response.json();
+        if (response.status === 200) {
+            return response.json()
+                .then(data => {
+                    this.setState({
+                        course: data.course,
+                        loading: false
+                    })
+                })
+                .catch(error => {
+                    console.log('Unable to fetch data');
+        
+                });
         }     
     }
 
-    actionsBar = ()=>{
+    componentDidMount(){  
+        this.getCourse();   
+    }
+
+    render(){
         const isAuthed = this.props.isAuthed;
-        
-        return( 
+       
+        return(
+            <div>
                 <div className="actions--bar">
                     <div className="bounds">
                         <div className="grid-100">
                             {isAuthed && this.state.course.userId === isAuthed.user[0].id?
                             <span>
                                 <Link className="button" to={"/courses/" + this.state.course.id + "/update"}>Update Course</Link>
-                                <Link className="button" to="/">Delete Course</Link> 
+                                <Link className="button" to={"/courses/" + this.state.course.id + "/delete"}>Delete Course</Link> 
                             </span>
                             :
                                 []
@@ -60,12 +76,6 @@ class CourseDetail extends Component{
                         </div>
                     </div>
                 </div>
-        )
-    }
-
-    courseDetail = ()=>{
-        const isAuthed = this.props.isAuthed;
-        return (
                 <div className="bounds course--detail">
                     <div className="grid-66">
                         <div className="course--header">
@@ -77,9 +87,9 @@ class CourseDetail extends Component{
                                 <p>Created by User: {this.state.course.userId}</p>
                             }
                         </div>
-                        <div className="course--description">
-                            <p>{this.state.course.description}</p>
-                        </div>
+                        <div>
+                            <ReactMarkdown source={this.state.course.description} className="course--description"/> 
+                        </div>                        
                     </div>
                     <div className="grid-25 grid-right">
                         <div className="course--stats">
@@ -90,38 +100,14 @@ class CourseDetail extends Component{
                                 </li>
                                 <li className="course--stats--list--item">
                                     <h4>Materials Needed</h4>
-                                    <p>
-                                        {this.state.course.materialsNeeded}
-                                    </p>
+                                    <div>
+                                        <ReactMarkdown source={this.state.course.materialsNeeded} />
+                                    </div>
                                 </li>
                             </ul> 
                         </div>
                     </div>                       
                 </div>
-        )
-    }
-
-    componentDidMount(){  
-        this.getCourse()
-          .then(data => {
-            this.setState({
-                course: data.course,
-                loading: false
-            })
-          })
-          .catch(error => {
-            console.log('Unable to fetch data');
-          })    
-    }
-
-    render(){
-        const actionsBar = this.actionsBar();
-        const courseDetail = this.courseDetail();
-
-        return(
-            <div>
-                { actionsBar }
-                { courseDetail }
             </div>
            
         )
