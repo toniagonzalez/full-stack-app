@@ -140,7 +140,8 @@ router.post('/users', [
 
 //GET ALL Courses GET/api/courses
 //SELECT id, userId, title, description, estimatedTime, materialsNeeded FROM Courses
-router.get('/courses', asyncHandler(async(req, res)=>{    
+router.get('/courses', asyncHandler(async(req, res)=>{ 
+       
     Course.findAll({
         attributes: ['id', 'userId', 'title', 'description', 'estimatedTime', 'materialsNeeded']
     })

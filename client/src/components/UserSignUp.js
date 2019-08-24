@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Link, Redirect } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 class UserSignUp extends Component {
 
@@ -7,7 +7,6 @@ class UserSignUp extends Component {
         super(props);
         this.state = {
             errors: [],
-            unhandledError: false,
             firstName: '',
             lastName: '',
             emailAddress: '',
@@ -86,13 +85,6 @@ class UserSignUp extends Component {
 
     render(){
         const errors = this.state.errors;
-
-        //Redirects unhandled errors
-        if (this.state.unhandledError){
-            return (
-                <Redirect to={'/error'}/>
-            )
-        }
 
         return(
             <div className="bounds">
