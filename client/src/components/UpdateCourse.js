@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import urlBase from '../config';
 
 
@@ -10,6 +10,9 @@ class UpdateCourse extends Component {
     
         this.state = {
           errors: [],
+          unhandledError: false,
+          notfound: false,
+          forbidden: false,
           confirmation: null,
           id: '',
           userId: '',
@@ -20,6 +23,7 @@ class UpdateCourse extends Component {
         }
     };
 
+    //fetches courses API
     api = (path, method, body=null, requiresAuth = false, credentials =  null) => {
         const options = {
             method,
@@ -40,40 +44,59 @@ class UpdateCourse extends Component {
         return fetch(path, options)
     }
 
+    //calls GET method on courses API to retrieve course for update
     getCourse = async() => {
-        let pathLength = window.location.pathname.length; 
-        let courseId = window.location.pathname.substring(9 , pathLength - 7);
+        let pathName = window.location.pathname; 
+        let courseId = pathName.replace(/\D/g, '');
         let path = urlBase + '/courses/' + courseId;
-        const getApi = await this.api(path, 'GET', null );
-        return getApi.json();    
+        const response = await this.api(path, 'GET', null );
+        if (response !== null){
+            return response.json(); 
+        }
+        else {
+            return null;
+        }
+                      
     }
 
+    //calls PUT  method on courses API to get to update course & handle errors
     updateCourse = async(course)=> {
-        let pathLength = window.location.pathname.length; 
-        let courseId = window.location.pathname.substring(9 , pathLength - 7);
+        let courseId = window.location.pathname.replace(/\D/g, '');
         let path = urlBase + '/courses/' + courseId;
   
         const response = await this.api(path, 'PUT', course, true, this.props.encodedCred);
 
         if (response.status === 401 || response.status === 403 ) {
-            this.props.history.push('/forbidden'); 
+            this.setState({
+                forbidden: true
+            }) 
         }
-        else if (response.status === 204) {
+        if (response.status === 204) {
             this.setState({
                 confirmation: "Your course has been updated!",
                 errors: []
             }) 
             return [];
         }
-        else if(response.status === 400 ) {
+        if(response.status === 400 ) {
             const errors = await response.json().then((data) => {return data.errors});
             this.setState({
                 errors: errors
             })
         }
-        
+        if(response.status === 404 ) {
+            this.setState({
+                notfound: true
+            })
+        } 
+        else if(response.status === 500 ) {
+            this.setState({
+                unhandledError: true
+            })
+        }        
     }
     
+    //sets state to form input values on entry
     handleInputChange = (event) => {
         const value = event.target.value;
         const name = event.target.name;
@@ -83,6 +106,7 @@ class UpdateCourse extends Component {
         });
     }
 
+    //calls 'updateCourse' on form submission 
     handleSubmit = async(event)=> {
         event.preventDefault();
         let title = this.state.title;
@@ -100,29 +124,64 @@ class UpdateCourse extends Component {
         await this.updateCourse(course);    
     }
 
-
+    //calls 'getCourse' on page mount
     componentDidMount(){  
         this.getCourse()
           .then(data => {
-            this.setState({
-                course: data.course,
-                id: data.course.id,
-                userId: data.course.userId,
-                title: data.course.title,
-                description: data.course.description,
-                estimatedTime: data.course.estimatedTime,
-                materialsNeeded: data.course.materialsNeeded,
-            })
-          })
+              if(data.course === undefined){
+                this.setState({
+                    unhandledError: true,
+                    loading: false,
+                })
+              }
+              if(data.course.userId === this.props.isAuthed.user[0].id){
+                this.setState({
+                    course: data.course,
+                    id: data.course.id,
+                    userId: data.course.userId,
+                    title: data.course.title,
+                    description: data.course.description,
+                    estimatedTime: data.course.estimatedTime,
+                    materialsNeeded: data.course.materialsNeeded,
+                })
+              } else{
+                  this.setState({
+                      forbidden: true
+                  })
+              }          
+          })   
           .catch(error => {
-            console.log('Unable to fetch data');
-          })    
+              console.log(error);
+            this.setState({
+                notfound: true
+            })
+          }) 
     }
 
     render(){
         const errors = this.state.errors;
-        const confirmation = this.state.confirmation;
-  
+        const confirmation = this.state.confirmation; 
+
+         //Redirects if auth user does not own course
+        if (this.state.forbidden){
+            return (
+                <Redirect to={'/forbidden'}/>
+            )
+        }
+         //Redirects if course not found
+        if (this.state.notfound){
+            return (
+                <Redirect to={'/notfound'}/>
+            )
+        }
+         //Redirects unhandled errors
+        if (this.state.unhandledError){
+            return (
+                <Redirect to={'/error'}/>
+            )
+        }
+    
+       
         return (
             <div className="bounds course--detail">
                 <div>
@@ -139,13 +198,6 @@ class UpdateCourse extends Component {
                         []
                     }
                 </div>
-                {  confirmation ?
-                            <div className="confirmation">
-                                <h3 > {confirmation} </h3>     
-                            </div>
-                            :
-                            []
-                        }
                 <h1>Update Course</h1>
                 <div>    
                     <form onSubmit={this.handleSubmit}>
@@ -163,6 +215,7 @@ class UpdateCourse extends Component {
                                         onChange={this.handleInputChange}
                                     />
                                 </div>
+                                {/* <p>By {this.props.isAuthed.user[0].firstName} {this.props.isAuthed.user[0].lastName}</p> */}
                                 <p>By {this.props.isAuthed.user[0].firstName} {this.props.isAuthed.user[0].lastName}</p>
                             </div>
                             <div className="course--description">
@@ -211,7 +264,10 @@ class UpdateCourse extends Component {
                         </div>
                             { confirmation ?
                                 <div className="grid-100 pad-bottom">
-                                    <Link to="/" className="button button-secondary">Return to Courses</Link>
+                                    <div className="confirmation">
+                                        <h3 > {confirmation} </h3>     
+                                    </div>
+                                    <Link to={'/courses/'+ this.state.id} className="button button-secondary" >Back to Course Details</Link>
                                 </div>
                             :  
                                 <div className="grid-100 pad-bottom">

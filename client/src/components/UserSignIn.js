@@ -8,13 +8,12 @@ class UserSignIn extends Component {
         super(props);
         this.state = {
             emailAddress: '',
-            password: '',
-            errors: [] 
+            password: '' 
         };
     }
     
 
-
+    //sets state to form input values on entry
     handleInputChange = (event) => {
         const value = event.target.value;
         const name = event.target.name;
@@ -24,43 +23,30 @@ class UserSignIn extends Component {
         });
     }
 
+     //calls 'signIn' from props on form submission
     handleSubmit = async (event)=> {
         event.preventDefault();
         const  from  = this.props.location.state ? this.props.location.state.from.pathname : this.props.history.push('/');
         await this.props.signIn(this.state.emailAddress, this.state.password)
             .then(user => {
                 if (user === null) {  
-                    this.props.history.push('/');                     
+                    this.props.history.push('/error');                     
                }
                 if (this.props.redirect === true) { 
                     this.props.history.push(from);              
-                }
+                } 
             })
             .catch(err => {
                 console.log(err);
-                this.props.history.push('/error');
             });   
     }
 
     render(){
-       const errors = this.state.errors;
-
+       
         return(
             <div className="bounds">
                 <div className="grid-33 centered signin">
                     <h1>Sign In</h1>
-                    {errors.length ?
-                        <div>
-                            <h2 className="validation--errors--label">Validation errors</h2>
-                            <div className="validation-errors">
-                                <ul>
-                                    {errors.map((error, i) => <li key={i}>{error}</li>)}
-                                </ul>
-                            </div>
-                        </div>
-                        :
-                        []
-                    }
                     <div>
                         <form onSubmit={this.handleSubmit}>
                             <div>

@@ -1,20 +1,22 @@
 import React, { Component } from 'react';
-import { Link} from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 
 class UserSignUp extends Component {
 
     constructor(props){
         super(props);
         this.state = {
+            errors: [],
+            unhandledError: false,
             firstName: '',
             lastName: '',
             emailAddress: '',
             password: '',
-            confirmPassword: '',
-            errors: []
+            confirmPassword: ''
         };
     }
-
+       
+    //sets state to form input values on entry
     handleInputChange = (event) => {
         const value = event.target.value;
         const name = event.target.name;
@@ -24,25 +26,37 @@ class UserSignUp extends Component {
         });
     }
 
+    //calls 'createUser' from props
+    //if valid user calls 'signIn' from props 
+    //else display validation errors
     signUp = async(user, username, password) => {
-        await this.props.createUser(user)
-        .then( errors=> {
-            if (errors) {
-              this.setState({ errors });
-            }
-            else {
-                this.props.signIn(username, password)
-                .then(() => {
-                    this.props.history.push('/');    
-                });
-            }
-        })
-        .catch( err => {
-            console.log(err);
-            this.props.history.push('/errors');
-        });  
+        const response = await this.props.createUser(user)
+        if (response === undefined){
+            this.setState({
+                unhandledError: true
+            })
+        }
+        else{
+            await this.props.createUser(user).then( errors => {
+                if (errors) {
+                    this.setState({ errors });
+                  }
+                  else {
+                      this.props.signIn(username, password)
+                      .then(() => {
+                          this.props.history.push('/');    
+                      });
+                  } 
+    
+            })
+            .catch( err => {
+                console.log(err);
+            })
+        }
+
     }
 
+    //calls 'signUp' on form submission & handles validation errors
     handleSubmit = async (event)=> { 
        await  event.preventDefault();
         let password = this.state.password[0];
@@ -62,6 +76,13 @@ class UserSignUp extends Component {
 
     render(){
         const errors = this.state.errors;
+
+        //Redirects unhandled errors
+        if (this.state.unhandledError){
+            return (
+                <Redirect to={'/error'}/>
+            )
+        }
 
         return(
             <div className="bounds">

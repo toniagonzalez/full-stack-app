@@ -97,7 +97,8 @@ xmp {
 
 /* line 102, ../sass/reset.sass */
 html,
-body {
+body,
+#root {
   height: 100%;
 }
 
@@ -202,12 +203,16 @@ svg {
 /* line 5, ../sass/global.sass */
 body {
   font-family: "Work Sans", sans-serif;
-  background: #fff;
+}
+
+.loading {
+  text-align: center;
+  font-size: 20px;
 }
 
 /* line 13, ../sass/global.sass */
 .header {
-  background: #57496e;
+  background: #4C5760;
   padding: 20px 10px;;
   margin-bottom: 30px;
 }
@@ -256,8 +261,8 @@ body {
 
 /* line 44, ../sass/global.sass */
 .actions--bar {
-  border-bottom: 1px solid #d5f9fe;
-  background: #f8feff;
+  border-bottom: .5px solid #f1f3f4;
+  background-image: url(./marble.jpg);
   padding: 20px 0;
   margin-top: -30px;
 }
@@ -283,7 +288,7 @@ h1 {
 
 /* line 61, ../sass/global.sass */
 a {
-  color: #7c689b;
+  color: green;
   cursor: pointer;
   text-decoration: none;
   -webkit-transition: color 0.2s;
@@ -291,6 +296,10 @@ a {
   -ms-transition: color 0.2s;
   -o-transition: color 0.2s;
   transition: color 0.2s;
+}
+
+a:hover {
+  color: #4C5760;
 }
 
 /* line 66, ../sass/global.sass */
@@ -339,10 +348,20 @@ p {
   margin: 0 auto;
 }
 
+.main-page {
+  position: absolute;
+  left: 0;
+  right: 0;
+  padding: 50px;
+  background-image: url(./marble.jpg);
+  box-shadow: 50px 50px 50px 0 white inset, -50px -50px 50px 0 white inset;
+}
+
 /* line 102, ../sass/global.sass */
 .course--module {
-  background: #7c689b;
+  background:#70818f;
   border-radius: 8px;
+  border: 1px solid #6f8b90;
   padding: 30px;
   margin-bottom: 30px;
   min-height: 107px;
@@ -350,6 +369,7 @@ p {
   position: relative;
   box-sizing: border-box;
 }
+
 /* line 2, ../sass/mixins.sass */
 .course--module:before, .course--module:after {
   content: " ";
@@ -386,6 +406,7 @@ p {
   text-decoration: none;
   border: 0;
 }
+
 /* line 133, ../sass/global.sass */
 .course--add--module {
   background: #eee;
@@ -680,7 +701,7 @@ input:focus {
 
 /* line 507, ../sass/global.sass */
 .button {
-  background: #7c689b;
+  background: #4C5760;
   color: #fff;
   font-family: "Work Sans", sans-serif;
   font-size: 18px;
@@ -703,14 +724,15 @@ input:focus {
 }
 /* line 522, ../sass/global.sass */
 .button:not(.button-secondary):hover {
-  background: #63537d;
+  background: #6F8B90;
+  color: white;
 }
 
 /* line 525, ../sass/global.sass */
 .button-secondary {
-  color: #7c689b;
-  background: none;
-  box-shadow: 0 0 0 2px #7c689b inset;
+  color: #4C5760;
+  background: #fff;
+  box-shadow: 0 0 0 2px #4C5760 inset;
   -webkit-transition: box-shadow 0.2s, color 0.2s;
   -moz-transition: box-shadow 0.2s, color 0.2s;
   -ms-transition: box-shadow 0.2s, color 0.2s;
@@ -719,8 +741,8 @@ input:focus {
 }
 /* line 530, ../sass/global.sass */
 .button-secondary:hover {
-  color: #63537d;
-  box-shadow: 0 0 0 2px #63537d inset;
+  color:#6f8b90;
+  box-shadow: 0 0 0 2px #6f8b90 inset;
 }
 
 /* adds additional padding to the bottom of an element */
@@ -747,6 +769,7 @@ input:focus {
 .validation-errors ul {
   color: #7c689b;
   padding: 15px 0 40px 10px;
+  margin-bottom: 10px;
 }
 
 /* reduce bottom margin on the course description textarea element */

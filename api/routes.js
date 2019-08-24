@@ -77,6 +77,7 @@ router.get('/users', [
     .exists()
     .withMessage('Please provide a value for "password"')
 ], asyncHandler(authenticateUser), asyncHandler(async (req, res)=>{
+
     const currentUser = req.currentUser;
     User.findAll({
         attributes: ['id', 'firstName', 'lastName', 'emailAddress'],
@@ -95,12 +96,10 @@ router.get('/users', [
 router.post('/users', [
     check('firstName')
         .exists()
-        .withMessage('Please provide a value for "First Name"')
         .not().isEmpty()
         .withMessage('Please provide a value for "First Name"'),
     check('lastName')
         .exists()
-        .withMessage('Please provide a value for "Last Name"')
         .not().isEmpty()
         .withMessage('Please provide a value for "Last Name"'),
     check('emailAddress')
@@ -113,7 +112,7 @@ router.post('/users', [
         .withMessage('Please provide a value for "password"')
 
 ], asyncHandler(async (req, res, next)=>{
-
+    
     // Get the validation result from the Request object.
     const errors = validationResult(req);
 
@@ -141,7 +140,7 @@ router.post('/users', [
 
 //GET ALL Courses GET/api/courses
 //SELECT id, userId, title, description, estimatedTime, materialsNeeded FROM Courses
-router.get('/courses', asyncHandler(async(req, res)=>{
+router.get('/courses', asyncHandler(async(req, res)=>{    
     Course.findAll({
         attributes: ['id', 'userId', 'title', 'description', 'estimatedTime', 'materialsNeeded']
     })
@@ -165,7 +164,7 @@ router.get('/courses/:id', asyncHandler(async (req, res)=>{
             res.json({course});       
         }
         else {
-            res.status(400).end();
+            res.status(404).end();
         }
 
     })
@@ -186,6 +185,7 @@ router.post('/courses', [
         .not().isEmpty()
         .withMessage('Please provide a value for "Course Description"')
 ], asyncHandler(authenticateUser), asyncHandler(async (req, res, next)=>{
+
     //Declare authenticated User 
     const currentUser = req.currentUser.id;
 
@@ -227,6 +227,7 @@ router.put('/courses/:id', [
         .not().isEmpty()
         .withMessage('Please provide a value for "Course Description"'),
 ], asyncHandler(authenticateUser), asyncHandler(async (req, res, next)=>{
+
     //Declare authenticated User 
     const currentUser = req.currentUser.id;
 
@@ -271,6 +272,7 @@ router.delete('/courses/:id', asyncHandler(authenticateUser), asyncHandler(async
          //If current user owns course update course
          if (currentUser === course.userId) {
             if (course){
+                console.log(course);
                 course.destroy();
                 res.status(204).end();
             } else {

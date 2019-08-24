@@ -32,6 +32,7 @@ class App extends Component {
     }
   };
 
+  //fetches Courses API
   api = (path, method = 'GET', body = null, requiresAuth = false, credentials =  null) => {
     const url = urlBase + path;
   
@@ -54,14 +55,12 @@ class App extends Component {
     return fetch(url, options);
   }
 
+  //calls 'GET' method on courses API to get authenicated user 
   getUser= async(username, password) => {
     const response = await this.api(`/users`, 'GET', null, true, { username, password });
     
     if (response.status === 200) {
       return response.json().then(data => data);
-    }
-    else if (response.status === 401) {
-      return null;
     }
     else {
       return null;
@@ -69,6 +68,7 @@ class App extends Component {
 
   }
   
+  //calls 'POST' method on courses API to create new user
   createUser = async(user) => {
     const response = await this.api('/users', 'POST', user);
     const errors = await response.json().then((data) => {return data.errors});
@@ -80,7 +80,8 @@ class App extends Component {
     }
   }
 
-
+  //calls 'getUser' method and saves encodedCredentials in state
+  //if called from a private route sets redirects to true to route user to previous page
   signIn = async (emailAddress, password) => {
     const user = await this.getUser(emailAddress, password);
     const encodedCredentials = btoa(`${emailAddress}:${password}`);
@@ -104,6 +105,8 @@ class App extends Component {
     return user;
   }
 
+   
+  //removes cookies for authenticated user and encodedCredentials and sets state to null 
   signOut = () => {
   
       this.setState( ()=> {
@@ -122,11 +125,11 @@ class App extends Component {
   
 
   render() {
-
+    //HOC that extends a private route to included components requiring signin before access
     const PrivateRoute = ({component: MyComponent, ...rest}) =>{
       return(
-          <Route {...rest} render={(props) => (             
-              this.state.authenticatedUser? 
+          <Route {...rest} render={(props) => (           
+              this.state.authenticatedUser ? 
               <MyComponent 
                 {...props}  
                 isAuthed={this.state.authenticatedUser} 

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import urlBase from '../config';
 
 class CreateCourse extends Component {
@@ -8,6 +8,7 @@ class CreateCourse extends Component {
     
         this.state = {
           errors: [],
+          unhandledError: false,
           confirmation: null,
           title: '',
           description: '',
@@ -16,6 +17,7 @@ class CreateCourse extends Component {
         }
     };
 
+    //sets state to form input values on entry
     handleInputChange = (event) => {
         const value = event.target.value;
         const name = event.target.name;
@@ -25,6 +27,7 @@ class CreateCourse extends Component {
         });
     }
 
+     //calls 'createCourse' on form submission 
     handleSubmit = async(event)=> {
         event.preventDefault();
         let title = this.state.title;
@@ -44,6 +47,7 @@ class CreateCourse extends Component {
        
     }
 
+    //fetches courses API
     api = (path, method, body=null, requiresAuth = false, credentials =  null) => {
         const options = {
             method,
@@ -65,22 +69,29 @@ class CreateCourse extends Component {
         return fetch(path, options)
     }
 
+    //calls POST  method on courses API to get to create course & handle errors
     createCourse = async(course)=> {
         let path = urlBase + '/courses';
         
         const response = await this.api(path, 'POST', course, true, this.props.encodedCred);
-        const errors = await response.json().then((data) => {return data.errors});
-
+        
         if (response.status === 401 || response.status === 403 ) {
             this.props.history.push('/forbidden'); 
         }
-        else if (response.status === 201) {
+        if (response.status === 201) {
             this.setState({
-                confirmation: "Your course has been created!"
+                confirmation: "Your course has been created!",
+                errors: []
             }) 
             return [];
         }
-        else {    
+        if (response.status === 500) {
+            this.setState({
+                unhandledError: true
+            })
+        }
+        else {   
+            const errors = await response.json().then((data) => {return data.errors}); 
             this.setState({
                 errors: errors
             })
@@ -89,16 +100,15 @@ class CreateCourse extends Component {
 
     render(){
         const confirmation = this.state.confirmation;
+         //if unhandled error
+         if (this.state.unhandledError){
+            return (
+                <Redirect to={'/error'}/>
+            )
+        }
       
         return (
             <div className="bounds course--detail">
-                  <div className="confirmation">
-                    { confirmation ?
-                        <h3> {confirmation} </h3>
-                    :  
-                        []
-                    }
-                </div>
                 <div>
                     {this.state.errors.length  ?
                         <div>
@@ -180,6 +190,13 @@ class CreateCourse extends Component {
                             </div>  
                             { confirmation ?
                                 <div className="grid-100 pad-bottom"> 
+                                    <div className="confirmation">
+                                        { confirmation ?
+                                            <h3> {confirmation} </h3>
+                                        :  
+                                            []
+                                        }
+                                    </div>
                                     <Link to="/" className="button button-secondary">Return to Courses</Link>
                                 </div>
                             :  

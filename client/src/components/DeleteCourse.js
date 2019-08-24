@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Link} from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import urlBase from '../config';
 
 class DeleteCourse extends Component{
@@ -8,7 +8,9 @@ class DeleteCourse extends Component{
         super(props);
     
         this.state = {
-            errors: [],
+            forbidden: false,
+            unhandledError: false,
+            notfound: false,
             id: '',
             userId: '',
             title: '',
@@ -18,6 +20,7 @@ class DeleteCourse extends Component{
         }
     };
 
+    //fetches courses API
     api = (path, method, body=null, requiresAuth=null, credentials=null) => {
         const options = {
         method,
@@ -39,54 +42,85 @@ class DeleteCourse extends Component{
         return fetch(path, options)
     }
 
+    //calls GET method on courses API to retrieve course for update
     getCourse = async() => {
-        let pathLength = window.location.pathname.length; 
-        let courseId = window.location.pathname.substring(9 , pathLength - 7);
+        let pathName = window.location.pathname; 
+        let courseId = pathName.replace(/\D/g, '');
         let path = urlBase + '/courses/' + courseId;
         const response = await this.api(path, 'GET', null );
 
-        if (response.status === 400) {
-            this.props.history.push('/notfound'); 
-        }
-        else if (response.status === 200) {
+        if (response.status === 200) {
             return response.json();
         }     
     }
 
+    //calls DELETE  method on courses API to get to remove the course from the database
     deleteCourse = async() => {
         let path = urlBase + '/courses/' + this.state.id;
-        const response = await this.api(path, 'DELETE', null, this.props.encodedCred );
+        const response = await this.api(path, 'DELETE', {}, this.props.encodedCred );
         if (response.status === 204) {
             this.props.history.push('/'); 
         }
         else {
             this.setState({
-                errors: ['Ooops, looks like something went wrong!']
+                unhandledError: true
             })
         }
 
     }
 
+    //calls 'getCourse' on mount
     componentDidMount(){  
         this.getCourse()
-          .then(data => {
-            this.setState({
-                course: data.course,
-                id: data.course.id,
-                userId: data.course.userId,
-                title: data.course.title,
-                description: data.course.description,
-                estimatedTime: data.course.estimatedTime,
-                materialsNeeded: data.course.materialsNeeded,
-            })
+        .then(data => {
+            //if user owns course set state with course data
+            if(data.course.userId === this.props.isAuthed.user[0].id){
+              this.setState({
+                  course: data.course,
+                  id: data.course.id,
+                  userId: data.course.userId,
+                  title: data.course.title,
+                  description: data.course.description,
+                  estimatedTime: data.course.estimatedTime,
+                  materialsNeeded: data.course.materialsNeeded,
+              })
+               //else forbidden true
+            } else{
+                this.setState({
+                    forbidden: true
+                })
+            }          
+        })   
+        .catch(error => {
+            //route to not found if course not returned
+            console.log(error);
+          this.setState({
+              notfound: true
           })
-          .catch(error => {
-            console.log('Unable to fetch data');
-          })    
+        })    
     }
 
     render(){
         const isAuthed = this.props.isAuthed;
+
+        //if forbidden Redirect
+        if (this.state.forbidden){
+            return (
+                <Redirect to={'/forbidden'}/>
+            )
+        }
+        //if not found redirect
+        if (this.state.notfound){
+            return (
+                <Redirect to={'/notfound'}/>
+            )
+        }
+         //Redirects unhandled errors
+        if (this.state.unhandledError){
+            return (
+                <Redirect to={'/error'}/>
+            )
+        }
        
         return(
             <div>
@@ -105,12 +139,7 @@ class DeleteCourse extends Component{
                     </div>
                 </div>
                 <div className="bounds course--detail">
-                    <div className="grid-66">
-                       { this.state.errors.length > 0 ?
-                            this.state.errors
-                         :
-                         []
-                       } 
+                    <div className="grid-66"> 
                         {isAuthed && this.state.userId === isAuthed.user[0].id ?
                             <h3 className="delete-warning">Are you sure you want to delete this course?</h3> 
                         :

@@ -1,6 +1,6 @@
 # full-stack-app
 
-This full stack application allows users to administer a school database containing information about courses. I built the UI using React and constructed the REST API using Express/Node. Users can interact with the database by retrieving a list of courses, viewing detail for a specific course, as well as creating, updating and deleting courses in the database. 
+This full stack application allows users to administer a school database containing information about courses. I built the Front End/UI using Create React App and constructed the REST API using Express/Node. Authenticated Users can interact with the database by retrieving a list of courses, viewing details for a specific course, as well as creating, updating and deleting courses in the database. 
 
 To view the project:
 
