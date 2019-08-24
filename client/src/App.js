@@ -71,11 +71,11 @@ class App extends Component {
   //calls 'POST' method on courses API to create new user
   createUser = async(user) => {
     const response = await this.api('/users', 'POST', user);
-    const errors = await response.json().then((data) => {return data.errors});
     if (response.status === 201) {
       return [];
     }
     else {
+      const errors = await response.json().then((data) => {return data.errors})
       return errors;
     }
   }

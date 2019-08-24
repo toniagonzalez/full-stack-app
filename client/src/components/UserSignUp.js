@@ -29,28 +29,46 @@ class UserSignUp extends Component {
     //calls 'createUser' from props
     //if valid user calls 'signIn' from props 
     //else display validation errors
-    signUp = async(user, username, password) => {
-        const response = await this.props.createUser(user).catch(()=>{});
-        if (response === undefined){
-            this.setState({
-                unhandledError: true
-            })
-        }
-        else{
-            await this.props.createUser(user).then( errors => {
-                if (errors) {
-                    this.setState({ errors });
-                  }
-                  else {
-                      this.props.signIn(username, password)
-                      .then(() => {
-                          this.props.history.push('/');    
-                      });
-                  } 
-    
+    signUp = (user, username, password) => {
+
+        this.props.createUser(user)
+            .then( errors=> {
+                console.log(errors);
+                if (errors.length >0) {
+                    this.setState({ errors});
+                }
+                else {
+                    this.props.signIn(username, password)
+                    .then(() => {
+                        this.props.history.push('/');    
+                    });
+                }
             })
             .catch( err => {
                 console.log(err);
+                this.props.history.push('/errors');
+            });   
+
+    }
+
+    confirmPasswordHandler = (password, confirmPassword) => {
+     
+        let firstName = this.state.firstName[0];
+        let lastName = this.state.lastName[0];
+        let emailAddress = this.state.emailAddress[0];
+     
+        if (password === confirmPassword){
+            const user = {
+                password,
+                firstName,
+                lastName,
+                emailAddress
+            }
+            this.signUp(user, emailAddress, password);
+        }
+        else {
+            this.setState({
+                errors: ["Passwords must match!"]
             })
         }
 
@@ -59,19 +77,11 @@ class UserSignUp extends Component {
     //calls 'signUp' on form submission & handles validation errors
     handleSubmit = async (event)=> { 
        await  event.preventDefault();
-        let password = this.state.password[0];
-        let firstName = this.state.firstName[0];
-        let lastName = this.state.lastName[0];
-        let emailAddress = this.state.emailAddress[0];
 
-        const user = {
-            password,
-            firstName,
-            lastName,
-            emailAddress
-        }
-        
-        this.signUp(user, emailAddress, password);
+        let password = this.state.password[0];
+        let confirmPassword = this.state.confirmPassword[0];
+
+        this.confirmPasswordHandler(password, confirmPassword);     
     }   
 
     render(){
