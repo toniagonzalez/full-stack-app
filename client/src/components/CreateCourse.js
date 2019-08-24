@@ -73,7 +73,7 @@ class CreateCourse extends Component {
     createCourse = async(course)=> {
         let path = urlBase + '/courses';
         
-        const response = await this.api(path, 'POST', course, true, this.props.encodedCred);
+        const response = await this.api(path, 'POST', course, true, this.props.encodedCred).catch(()=>{});
         
         if (response.status === 401 || response.status === 403 ) {
             this.props.history.push('/forbidden'); 

@@ -47,7 +47,7 @@ class DeleteCourse extends Component{
         let pathName = window.location.pathname; 
         let courseId = pathName.replace(/\D/g, '');
         let path = urlBase + '/courses/' + courseId;
-        const response = await this.api(path, 'GET', null );
+        const response = await this.api(path, 'GET', null ).catch(()=>{});
 
         if (response.status === 200) {
             return response.json();
@@ -57,7 +57,7 @@ class DeleteCourse extends Component{
     //calls DELETE  method on courses API to get to remove the course from the database
     deleteCourse = async() => {
         let path = urlBase + '/courses/' + this.state.id;
-        const response = await this.api(path, 'DELETE', {}, this.props.encodedCred );
+        const response = await this.api(path, 'DELETE', {}, this.props.encodedCred ).catch(()=>{});
         if (response.status === 204) {
             this.props.history.push('/'); 
         }

@@ -30,7 +30,7 @@ class UserSignUp extends Component {
     //if valid user calls 'signIn' from props 
     //else display validation errors
     signUp = async(user, username, password) => {
-        const response = await this.props.createUser(user)
+        const response = await this.props.createUser(user).catch(()=>{});
         if (response === undefined){
             this.setState({
                 unhandledError: true

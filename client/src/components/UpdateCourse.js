@@ -49,7 +49,7 @@ class UpdateCourse extends Component {
         let pathName = window.location.pathname; 
         let courseId = pathName.replace(/\D/g, '');
         let path = urlBase + '/courses/' + courseId;
-        const response = await this.api(path, 'GET', null );
+        const response = await this.api(path, 'GET', null ).catch(()=>{});
         if (response !== null){
             return response.json(); 
         }
@@ -64,7 +64,7 @@ class UpdateCourse extends Component {
         let courseId = window.location.pathname.replace(/\D/g, '');
         let path = urlBase + '/courses/' + courseId;
   
-        const response = await this.api(path, 'PUT', course, true, this.props.encodedCred);
+        const response = await this.api(path, 'PUT', course, true, this.props.encodedCred).catch(()=>{});
 
         if (response.status === 401 || response.status === 403 ) {
             this.setState({
