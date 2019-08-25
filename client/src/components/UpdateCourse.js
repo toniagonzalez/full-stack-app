@@ -19,7 +19,9 @@ class UpdateCourse extends Component {
           title: '',
           description: '',
           estimatedTime: '',
-          materialsNeeded: ''
+          materialsNeeded: '',
+          authorFirstName: '',
+          authorLastName: ''
         }
     };
 
@@ -128,6 +130,7 @@ class UpdateCourse extends Component {
     componentDidMount(){  
         this.getCourse()
           .then(data => {
+              console.log(data.course);
               if(data.course === undefined){
                 this.setState({
                     unhandledError: true,
@@ -143,6 +146,8 @@ class UpdateCourse extends Component {
                     description: data.course.description,
                     estimatedTime: data.course.estimatedTime,
                     materialsNeeded: data.course.materialsNeeded,
+                    authorFirstName: data.course.User.firstName,
+                    authorLastName: data.course.User.lastName
                 })
               } else{
                   this.setState({
@@ -216,7 +221,7 @@ class UpdateCourse extends Component {
                                     />
                                 </div>
                                 {/* <p>By {this.props.isAuthed.user[0].firstName} {this.props.isAuthed.user[0].lastName}</p> */}
-                                <p>By {this.props.isAuthed.user[0].firstName} {this.props.isAuthed.user[0].lastName}</p>
+                                <p>By {this.state.authorFirstName} {this.state.authorLastName}</p>
                             </div>
                             <div className="course--description">
                                 <div>

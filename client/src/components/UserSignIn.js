@@ -26,7 +26,8 @@ class UserSignIn extends Component {
      //calls 'signIn' from props on form submission
     handleSubmit = async (event)=> {
         event.preventDefault();
-        const  from  = this.props.location.state ? this.props.location.state.from.pathname : this.props.history.push('/');
+        const  from  = this.props.location.state ? this.props.location.state.from.pathname : this.props.history.goBack();
+   
         await this.props.signIn(this.state.emailAddress, this.state.password)
             .then(user => {
                 if (user === null) {  

@@ -116,7 +116,7 @@ class CourseDetail extends Component{
                                 {isAuthed && this.state.course.userId === isAuthed.user[0].id?
                                     <p>By {isAuthed.user[0].firstName} {isAuthed.user[0].lastName} </p>
                                 :
-                                    <p>Created by User: {this.state.course.userId}</p>
+                                    <p>By: {this.state.course.User.firstName} {this.state.course.User.lastName} </p>
                                 }
                             </div>
                             <div>

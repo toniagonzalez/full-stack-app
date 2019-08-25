@@ -158,7 +158,11 @@ router.get('/courses/:id', asyncHandler(async (req, res)=>{
         attributes: ['id', 'userId', 'title', 'description', 'estimatedTime', 'materialsNeeded'],
         where: {
             id: req.params.id
-        }
+        },
+        include: [ {
+            model: User, 
+            attributes: ['firstName', 'lastName']
+        }],
     })
     .then( (course) => {
         if (course){
