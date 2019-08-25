@@ -130,7 +130,6 @@ class UpdateCourse extends Component {
     componentDidMount(){  
         this.getCourse()
           .then(data => {
-              console.log(data.course);
               if(data.course === undefined){
                 this.setState({
                     unhandledError: true,
